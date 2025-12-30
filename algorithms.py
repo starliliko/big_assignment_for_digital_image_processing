@@ -350,21 +350,22 @@ class DerainAlgorithms:
         return result
     
     @staticmethod
-    def morphological_derain(image, kernel_size=3, iterations=1):
+    def morphological_derain(image, kernel_size=5, iterations=2):
         """
-        形态学去雨
-        基于图像增强的方法，利用开运算去除细小雨滴
+        优化后的形态学去雨
+        利用开运算去除细小雨滴，并结合中值滤波进行预处理
         """
+        # 中值滤波预处理
+        preprocessed = cv2.medianBlur(image, 5)
+
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
-        
-        if len(image.shape) == 3:
-            result = np.zeros_like(image)
+        if len(preprocessed.shape) == 3:
+            result = np.zeros_like(preprocessed)
             for i in range(3):
-                # 开运算：先腐蚀后膨胀
-                result[:, :, i] = cv2.morphologyEx(image[:, :, i], cv2.MORPH_OPEN, kernel, iterations=iterations)
+                result[:, :, i] = cv2.morphologyEx(preprocessed[:, :, i], cv2.MORPH_OPEN, kernel, iterations=iterations)
         else:
-            result = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel, iterations=iterations)
-        
+            result = cv2.morphologyEx(preprocessed, cv2.MORPH_OPEN, kernel, iterations=iterations)
+
         return result
     
     @staticmethod
@@ -391,30 +392,30 @@ class DerainAlgorithms:
         return result
     
     @staticmethod
-    def dsc_derain(image, ksize=5, sigma=1.5):
+    def dsc_derain(image, ksize=7, sigma=2.0):
         """
-        基于稀疏编码的去雨（简化版）
-        使用高斯差分和形态学操作
+        优化后的稀疏编码去雨
+        使用高斯差分和形态学操作，并增强雨滴检测
         """
         # 高斯模糊
         blurred = cv2.GaussianBlur(image, (ksize, ksize), sigma)
-        
+
         # 差分检测雨滴
         diff = cv2.absdiff(image, blurred)
-        
+
         # 阈值处理
         if len(diff.shape) == 3:
             diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
         else:
             diff_gray = diff
-        
-        _, mask = cv2.threshold(diff_gray, 20, 255, cv2.THRESH_BINARY)
-        
+
+        _, mask = cv2.threshold(diff_gray, 30, 255, cv2.THRESH_BINARY)
+
         # 膨胀雨滴区域
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-        mask = cv2.dilate(mask, kernel, iterations=1)
-        
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        mask = cv2.dilate(mask, kernel, iterations=2)
+
         # 使用inpaint修复雨滴区域
-        result = cv2.inpaint(image, mask, 3, cv2.INPAINT_TELEA)
-        
+        result = cv2.inpaint(image, mask, 5, cv2.INPAINT_TELEA)
+
         return result
