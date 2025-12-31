@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1200</width>
+    <height>842</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>图像去雾去雨系统 - 数字图像处理大作业</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+QMainWindow {
+    background-color: #f0f0f0;
+}
+QGroupBox {
+    font-weight: bold;
+    border: 2px solid #aaa;
+    border-radius: 5px;
+    margin-top: 10px;
+    padding-top: 10px;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 5px;
+}
+QPushButton {
+    background-color: #4a90d9;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+QPushButton:hover {
+    background-color: #357abd;
+}
+QPushButton:pressed {
+    background-color: #2a5f8f;
+}
+QComboBox {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+   </string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_left">
+      <item>
+       <widget class="QLabel" name="labelTitle">
+        <property name="text">
+         <string>图像去雾去雨系统</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="labelInfo">
+        <property name="text">
+         <string>组名：zzZ
+成员：李彦博 焦浩洋 范凯纬</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbFileSystem">
+        <property name="title">
+         <string>文件/系统</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_file">
+         <item>
+          <widget class="QPushButton" name="btn_openImage">
+           <property name="text">
+            <string>打开图像</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_openGT">
+           <property name="text">
+            <string>打开参考图(GT)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_saveResult">
+           <property name="text">
+            <string>保存结果</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_batchProcess">
+           <property name="text">
+            <string>批量处理</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbDehaze">
+        <property name="title">
+         <string>去雾算法</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_dehaze">
+         <item>
+          <widget class="QComboBox" name="comboDehaze"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnApplyDehaze">
+           <property name="text">
+            <string>执行去雾</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbDerain">
+        <property name="title">
+         <string>去雨算法</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_derain">
+         <item>
+          <widget class="QComboBox" name="comboDerain"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnApplyDerain">
+           <property name="text">
+            <string>执行去雨</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbMetrics">
+        <property name="title">
+         <string>评价指标</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_metrics">
+         <item>
+          <widget class="QPushButton" name="btnCalculateMetrics">
+           <property name="text">
+            <string>计算指标</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnCompareAlgorithms">
+           <property name="text">
+            <string>算法对比</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QProgressBar" name="progressBar">
+        <property name="value">
+         <number>0</number>
+        </property>
+        <property name="textVisible">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_right">
+      <item>
+       <widget class="QSplitter" name="splitterImages">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <widget class="QGroupBox" name="gbOriginal">
+         <property name="title">
+          <string>原图</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_original">
+          <item>
+           <widget class="ImageLabel" name="lblOriginal">
+            <property name="text">
+             <string>请打开图像</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QGroupBox" name="gbResult">
+         <property name="title">
+          <string>结果图</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_result">
+          <item>
+           <widget class="ImageLabel" name="lblResult">
+            <property name="text">
+             <string>处理后显示</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbInfo">
+        <property name="title">
+         <string>程序说明 / 评价指标输出</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_info">
+         <item>
+          <widget class="QTextEdit" name="textInfo">
+           <property name="font">
+            <font>
+             <family>Consolas</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+           <property name="plainText">
+            <string>欢迎使用图像去雾去雨系统！
+
+使用说明：
+1. 点击「打开图像」加载有雾/有雨图像
+2. 可选：点击「打开参考图(GT)」加载清晰参考图
+3. 选择去雾或去雨算法，点击执行
+4. 点击「计算指标」查看评价结果
+5. 点击「算法对比」进行多算法对比分析
+
+实现的算法：
+【去雾】直方图均衡化、CLAHE、自适应暗通道、伽马校正
+【去雨】中值滤波、双边滤波、导向滤波、形态学、低秩分解、稀疏编码
+
+评价指标：PSNR、SSIM、MSE、MAE、RMSE、熵、对比度、平均梯度、锐度、色彩丰富度</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ImageLabel</class>
+   <extends>QLabel</extends>
+   <header>main</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
