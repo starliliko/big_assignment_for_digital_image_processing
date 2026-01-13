@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1200</width>
+    <height>817</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>图像去雾去雨系统 - 数字图像处理大作业</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">            /* 梦幻可爱 · 粉蓝磨砂主题 */
+            QMainWindow {
+                background-color: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(242, 231, 255, 1.0),   /* 淡淡的薰衣草紫 */
+                    stop:1 rgba(222, 244, 255, 1.0)    /* 浅浅的天空蓝 */
+                );
+            }
+
+            /* 中央面板：略深一点的粉蓝磨砂玻璃块 */
+            QWidget#centralwidget {
+                background-color: rgba(245, 238, 255, 0.88);
+                border-radius: 18px;
+                border: 1px solid rgba(255, 255, 255, 0.8);
+            }
+
+            /* 分组框：柔和粉蓝，圆角更大一点 */
+            QGroupBox {
+                font-weight: bold;
+                border: 1px solid rgba(255, 255, 255, 0.75);
+                border-radius: 16px;
+                margin-top: 12px;
+                padding-top: 16px;
+                background-color: rgba(233, 245, 255, 0.95);
+                color: #555555;
+            }
+
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 14px;
+                padding: 0 8px;
+                color: #8c6fff;  /* 柔和紫色标题 */
+            }
+
+            /* 顶部标题和组员信息，更梦幻的文字颜色 */
+            QLabel#labelTitle {
+                color: #7b5cff;
+            }
+
+            QLabel#labelInfo {
+                color: #f06292;  /* 甜甜的粉色 */
+            }
+
+            /* 通用按钮：圆润的粉蓝渐变按钮 */
+            QPushButton {
+                background-color: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(255, 183, 213, 1.0),   /* 粉色 */
+                    stop:1 rgba(179, 205, 255, 1.0)    /* 淡蓝 */
+                );
+                color: #ffffff;
+                border: 1px solid rgba(255, 255, 255, 0.9);
+                padding: 8px 20px;
+                border-radius: 18px;
+            }
+
+            QPushButton:hover {
+                background-color: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(255, 198, 222, 1.0),
+                    stop:1 rgba(189, 215, 255, 1.0)
+                );
+            }
+
+            QPushButton:pressed {
+                background-color: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(247, 147, 191, 1.0),
+                    stop:1 rgba(159, 188, 245, 1.0)
+                );
+            }
+
+            /* 下拉框：与按钮协调的粉蓝配色 */
+            QComboBox {
+                padding: 6px 10px;
+                border: 1px solid rgba(255, 255, 255, 0.9);
+                border-radius: 16px;
+                background-color: rgba(233, 245, 255, 0.95);
+                color: #555555;
+            }
+
+            QComboBox QAbstractItemView {
+                background-color: rgba(248, 244, 255, 0.98);
+                color: #555555;
+                border: none;          /* 去掉边框，避免黑边 */
+                padding: 0px;          /* 去掉上下额外留白 */
+                margin: 0px;
+                outline: none;
+                selection-background-color: rgba(188, 170, 255, 0.9);
+            }
+
+            /* 程序说明 / 评价指标输出：淡紫信息面板 */
+            QTextEdit#textInfo {
+                background-color: rgba(248, 244, 255, 0.96);
+                border-radius: 16px;
+                border: 1px solid rgba(188, 170, 255, 0.9);
+                color: #5b4b7b;
+            }
+
+            /* 滚动条：与整体粉紫主题统一 */
+            QScrollBar:vertical {
+                background: transparent;
+                width: 10px;
+                margin: 4px 2px 4px 2px;
+                border-radius: 5px;
+            }
+
+            QScrollBar::handle:vertical {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(205, 186, 255, 0.9),
+                    stop:1 rgba(179, 205, 255, 0.9)
+                );
+                border-radius: 5px;
+                min-height: 20px;
+            }
+
+            QScrollBar::add-line:vertical,
+            QScrollBar::sub-line:vertical {
+                height: 0px;
+                width: 0px;
+            }
+
+            QScrollBar::add-page:vertical,
+            QScrollBar::sub-page:vertical {
+                background: transparent;
+            }
+
+            /* 窗口控制按钮：右上角半透明渐变方形（类似 QQ 音乐风格） */
+            QPushButton#btnClose,
+            QPushButton#btnMinimize,
+            QPushButton#btnMaximize {
+                min-width: 26px;
+                max-width: 26px;
+                min-height: 18px;
+                max-height: 18px;
+                border-radius: 4px;
+                padding: 0;
+                border: 1px solid rgba(255, 255, 255, 0.75);
+                color: transparent;  /* 不显示文字，仅用颜色表达含义 */
+            }
+
+            QPushButton#btnClose {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(255, 128, 150, 0.75),
+                    stop:1 rgba(255, 80, 120, 0.9)
+                );
+            }
+
+            QPushButton#btnClose:hover {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(255, 148, 170, 0.85),
+                    stop:1 rgba(255, 96, 136, 1.0)
+                );
+            }
+
+            QPushButton#btnMinimize {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(255, 220, 140, 0.7),
+                    stop:1 rgba(255, 196, 90, 0.9)
+                );
+            }
+
+            QPushButton#btnMinimize:hover {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(255, 230, 160, 0.8),
+                    stop:1 rgba(255, 204, 102, 1.0)
+                );
+            }
+
+            QPushButton#btnMaximize {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(160, 236, 210, 0.7),
+                    stop:1 rgba(110, 210, 190, 0.9)
+                );
+            }
+
+            QPushButton#btnMaximize:hover {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(178, 245, 220, 0.8),
+                    stop:1 rgba(120, 220, 200, 1.0)
+                );
+            }
+
+            /* 进度条：糖果色加载条 */
+            QProgressBar {
+                border: 1px solid rgba(188, 170, 255, 0.9);
+                border-radius: 8px;
+                background-color: rgba(245, 245, 255, 0.9);
+                text-align: center;
+                color: #7b5cff;
+            }
+
+            QProgressBar::chunk {
+                border-radius: 8px;
+                background-color: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:0,
+                    stop:0 rgba(255, 183, 213, 1.0),
+                    stop:1 rgba(179, 205, 255, 1.0)
+                );
+            }
+
+            /* 状态栏：轻微淡紫底 */
+            QStatusBar {
+                background-color: rgba(248, 244, 255, 0.95);
+            }
+   </string>
+  </property>
+    <widget class="QWidget" name="centralwidget">
+            <layout class="QHBoxLayout" name="horizontalLayout">
+                    <property name="leftMargin">
+                     <number>18</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>18</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>18</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>18</number>
+                    </property>
+             <item>
+                <layout class="QVBoxLayout" name="verticalLayout_left">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+                     <item>
+                 <widget class="QLabel" name="labelTitle">
+                     <property name="font">
+                      <font>
+                        <pointsize>20</pointsize>
+                        <bold>true</bold>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>图像去雾去雨系统</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                 </widget>
+                </item>
+        <item>
+         <widget class="QLabel" name="labelInfo">
+          <property name="font">
+            <font>
+             <pointsize>15</pointsize>
+             <bold>true</bold>
+            </font>
+          </property>
+          <property name="text">
+            <string>组名：zzZ
+成员：李彦博 焦浩洋 范凯纬</string>
+          </property>
+          <property name="alignment">
+            <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+      <item>
+       <widget class="QGroupBox" name="gbFileSystem">
+        <property name="title">
+         <string>文件/系统</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_file">
+         <item>
+          <widget class="QPushButton" name="btn_openImage">
+           <property name="text">
+            <string>打开图像</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_openGT">
+           <property name="text">
+            <string>打开参考图(GT)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_saveResult">
+           <property name="text">
+            <string>保存结果</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btn_batchProcess">
+           <property name="text">
+            <string>批量处理</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbDehaze">
+        <property name="title">
+         <string>去雾算法</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_dehaze">
+         <item>
+          <widget class="QComboBox" name="comboDehaze"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnApplyDehaze">
+           <property name="text">
+            <string>执行去雾</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbDerain">
+        <property name="title">
+         <string>去雨算法</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_derain">
+         <item>
+          <widget class="QComboBox" name="comboDerain"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnApplyDerain">
+           <property name="text">
+            <string>执行去雨</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbMetrics">
+        <property name="title">
+         <string>评价指标</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_metrics">
+         <item>
+          <widget class="QPushButton" name="btnCalculateMetrics">
+           <property name="text">
+            <string>计算指标</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnCompareAlgorithms">
+           <property name="text">
+            <string>算法对比</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QProgressBar" name="progressBar">
+        <property name="value">
+         <number>0</number>
+        </property>
+        <property name="textVisible">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_right">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_windowControls">
+          <property name="spacing">
+           <number>6</number>
+          </property>
+          <item>
+           <spacer name="horizontalSpacer_windowControls">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+            <width>40</width>
+            <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnMinimize">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnMaximize">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnClose">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+      <item>
+       <widget class="QSplitter" name="splitterImages">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <widget class="QGroupBox" name="gbOriginal">
+         <property name="title">
+          <string>原图</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_original">
+          <item>
+           <widget class="ImageLabel" name="lblOriginal">
+            <property name="text">
+             <string>请打开图像</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QGroupBox" name="gbResult">
+         <property name="title">
+          <string>结果图</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_result">
+          <item>
+           <widget class="ImageLabel" name="lblResult">
+            <property name="text">
+             <string>处理后显示</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="gbInfo">
+        <property name="title">
+         <string>程序说明 / 评价指标输出</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_info">
+         <item>
+          <widget class="QTextEdit" name="textInfo">
+           <property name="font">
+            <font>
+             <family>Consolas</family>
+                 <pointsize>12</pointsize>
+            </font>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+           <property name="plainText">
+            <string>欢迎使用图像去雾去雨系统！
+
+使用说明：
+1. 点击「打开图像」加载有雾/有雨图像
+2. 可选：点击「打开参考图(GT)」加载清晰参考图
+3. 选择去雾或去雨算法，点击执行
+4. 点击「计算指标」查看评价结果
+5. 点击「算法对比」进行多算法对比分析
+
+实现的算法：
+【去雾】直方图均衡化、CLAHE、自适应暗通道、伽马校正
+【去雨】中值滤波、双边滤波、导向滤波、形态学、低秩分解、稀疏编码
+
+评价指标：PSNR、SSIM、MSE、MAE、RMSE、熵、对比度、平均梯度、锐度、色彩丰富度</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ImageLabel</class>
+   <extends>QLabel</extends>
+   <header>main</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

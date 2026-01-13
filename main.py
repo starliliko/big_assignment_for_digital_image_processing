@@ -8,31 +8,38 @@ import sys
 import os
 import cv2
 import numpy as np
+from PyQt5 import uic  # 新增：使用 .ui 文件
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                              QHBoxLayout, QLabel, QPushButton, QFileDialog,
                              QGroupBox, QComboBox, QTextEdit, QScrollArea,
                              QMessageBox, QProgressBar, QTableWidget, QTableWidgetItem,
                              QHeaderView, QSplitter, QTabWidget, QSpinBox, QDoubleSpinBox,
                              QFormLayout, QSlider)
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QPoint
 from PyQt5.QtGui import QImage, QPixmap, QFont
 
 from algorithms import DehazeAlgorithms, DerainAlgorithms
 from metrics import ImageMetrics
-
+# from Ui_main import Ui_MainWindow  # 不再使用自动生成的 Python UI 文件，直接加载 main.ui
 
 class ImageLabel(QLabel):
     """可缩放的图像显示标签"""
-    def __init__(self, title=""):
-        super().__init__()
+    def __init__(self, parent=None, title=""):
+        super().__init__(parent)
         self.title = title
         self.setAlignment(Qt.AlignCenter)
         self.setMinimumSize(300, 300)
+        # 与整体界面统一的梦幻磨砂风格
         self.setStyleSheet("""
             QLabel {
-                border: 2px solid #ccc;
-                background-color: #f5f5f5;
-                border-radius: 5px;
+                border-radius: 18px;
+                border: 2px solid rgba(255, 255, 255, 0.65);
+                background-color: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(255, 228, 246, 0.9),
+                    stop:1 rgba(210, 235, 255, 0.9)
+                );
+                color: #333333;
             }
         """)
         self.setText(title if title else "无图像")
@@ -127,204 +134,129 @@ class MainWindow(QMainWindow):
         self.processed_image = None
         self.gt_image = None  # Ground truth image
         self.batch_results = []
+
+        # 窗口拖动相关状态
+        self._is_dragging = False
+        self._drag_pos = QPoint()
         
+        # 使用 .ui 初始化界面
         self.init_ui()
+        # 填充算法列表
         self.init_algorithms()
     
     def init_ui(self):
-        """初始化界面"""
-        self.setWindowTitle("图像去雾去雨系统 - 数字图像处理大作业")
-        self.setMinimumSize(1200, 800)
-        self.setStyleSheet("""
-            QMainWindow {
-                background-color: #f0f0f0;
-            }
-            QGroupBox {
-                font-weight: bold;
-                border: 2px solid #aaa;
-                border-radius: 5px;
-                margin-top: 10px;
-                padding-top: 10px;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px;
-            }
-            QPushButton {
-                background-color: #4a90d9;
-                color: white;
-                border: none;
-                padding: 8px 16px;
-                border-radius: 4px;
-                font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #357abd;
-            }
-            QPushButton:pressed {
-                background-color: #2a5f8f;
-            }
-            QComboBox {
-                padding: 5px;
-                border: 1px solid #ccc;
-                border-radius: 3px;
-            }
-        """)
-        
-        # 中央部件
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        
-        # 主布局
-        main_layout = QHBoxLayout(central_widget)
-        
-        # 左侧功能区
-        left_panel = self.create_left_panel()
-        main_layout.addWidget(left_panel, 1)
-        
-        # 右侧显示区
-        right_panel = self.create_right_panel()
-        main_layout.addWidget(right_panel, 4)
-    
-    def create_left_panel(self):
-        """创建左侧功能面板"""
-        panel = QWidget()
-        layout = QVBoxLayout(panel)
-        
-        # 标题
-        title_label = QLabel("图像去雾去雨系统")
-        title_label.setAlignment(Qt.AlignCenter)
-        title_label.setFont(QFont("微软雅黑", 14, QFont.Bold))
-        title_label.setStyleSheet("color: #333; padding: 10px;")
-        layout.addWidget(title_label)
-        
-        info_label = QLabel("组名：zzZ\n成员：李彦博 焦浩洋 范凯纬")
-        info_label.setAlignment(Qt.AlignCenter)
-        info_label.setStyleSheet("color: #666; padding: 5px;")
-        layout.addWidget(info_label)
-        
-        # 文件/系统组
-        file_group = QGroupBox("文件/系统")
-        file_layout = QVBoxLayout(file_group)
-        
-        btn_open = QPushButton("打开图像")
-        btn_open.clicked.connect(self.open_image)
-        file_layout.addWidget(btn_open)
-        
-        btn_open_gt = QPushButton("打开参考图(GT)")
-        btn_open_gt.clicked.connect(self.open_gt_image)
-        file_layout.addWidget(btn_open_gt)
-        
-        btn_save = QPushButton("保存结果")
-        btn_save.clicked.connect(self.save_image)
-        file_layout.addWidget(btn_save)
-        
-        btn_batch = QPushButton("批量处理")
-        btn_batch.clicked.connect(self.batch_process)
-        file_layout.addWidget(btn_batch)
-        
-        layout.addWidget(file_group)
-        
-        # 去雾算法组
-        dehaze_group = QGroupBox("去雾算法")
-        dehaze_layout = QVBoxLayout(dehaze_group)
-        
-        self.dehaze_combo = QComboBox()
-        dehaze_layout.addWidget(self.dehaze_combo)
-        
-        btn_dehaze = QPushButton("执行去雾")
-        btn_dehaze.clicked.connect(self.apply_dehaze)
-        dehaze_layout.addWidget(btn_dehaze)
-        
-        layout.addWidget(dehaze_group)
-        
-        # 去雨算法组
-        derain_group = QGroupBox("去雨算法")
-        derain_layout = QVBoxLayout(derain_group)
-        
-        self.derain_combo = QComboBox()
-        derain_layout.addWidget(self.derain_combo)
-        
-        btn_derain = QPushButton("执行去雨")
-        btn_derain.clicked.connect(self.apply_derain)
-        derain_layout.addWidget(btn_derain)
-        
-        layout.addWidget(derain_group)
-        
-        # 评价指标组
-        metrics_group = QGroupBox("评价指标")
-        metrics_layout = QVBoxLayout(metrics_group)
-        
-        btn_calculate = QPushButton("计算指标")
-        btn_calculate.clicked.connect(self.calculate_metrics)
-        metrics_layout.addWidget(btn_calculate)
-        
-        btn_compare = QPushButton("算法对比")
-        btn_compare.clicked.connect(self.compare_algorithms)
-        metrics_layout.addWidget(btn_compare)
-        
-        layout.addWidget(metrics_group)
-        
-        # 进度条
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setVisible(False)
-        layout.addWidget(self.progress_bar)
-        
-        layout.addStretch()
-        
-        return panel
-    
-    def create_right_panel(self):
-        """创建右侧显示面板"""
-        panel = QWidget()
-        layout = QVBoxLayout(panel)
-        
-        # 图像显示区
-        image_splitter = QSplitter(Qt.Horizontal)
-        
-        # 原图
-        original_group = QGroupBox("原图")
-        original_layout = QVBoxLayout(original_group)
-        self.original_label = ImageLabel("请打开图像")
-        original_layout.addWidget(self.original_label)
-        image_splitter.addWidget(original_group)
-        
-        # 结果图
-        result_group = QGroupBox("结果图")
-        result_layout = QVBoxLayout(result_group)
-        self.result_label = ImageLabel("处理后显示")
-        result_layout.addWidget(self.result_label)
-        image_splitter.addWidget(result_group)
-        
-        layout.addWidget(image_splitter, 3)
-        
-        # 程序说明区
-        info_group = QGroupBox("程序说明 / 评价指标输出")
-        info_layout = QVBoxLayout(info_group)
-        
-        self.info_text = QTextEdit()
-        self.info_text.setReadOnly(True)
-        self.info_text.setFont(QFont("Consolas", 10))
-        self.info_text.setPlainText(
-            "欢迎使用图像去雾去雨系统！\n\n"
-            "使用说明：\n"
-            "1. 点击「打开图像」加载有雾/有雨图像\n"
-            "2. 可选：点击「打开参考图(GT)」加载清晰参考图\n"
-            "3. 选择去雾或去雨算法，点击执行\n"
-            "4. 点击「计算指标」查看评价结果\n"
-            "5. 点击「算法对比」进行多算法对比分析\n\n"
-            "实现的算法：\n"
-            "【去雾】直方图均衡化、CLAHE、自适应暗通道、伽马校正\n"
-            "【去雨】中值滤波、双边滤波、导向滤波、形态学、低秩分解、稀疏编码\n\n"
-            "评价指标：PSNR、SSIM、MSE、MAE、RMSE、熵、对比度、平均梯度、锐度、色彩丰富度"
-        )
-        info_layout.addWidget(self.info_text)
-        
-        layout.addWidget(info_group, 1)
-        
-        return panel
-    
+        """使用 QtDesigner 生成的 .ui 文件初始化界面"""
+        ui_path = os.path.join(os.path.dirname(__file__), "main.ui")
+        uic.loadUi(ui_path, self)
+
+        # 设置左右区域伸缩比例为 1:3（左：右）
+        main_layout = self.findChild(QHBoxLayout, "horizontalLayout")
+        if main_layout is not None:
+            main_layout.setStretch(0, 1)
+            main_layout.setStretch(1, 3)
+
+        # 左侧垂直布局：让按钮区域纵向更均匀铺满整列
+        left_layout = self.findChild(QVBoxLayout, "verticalLayout_left")
+        if left_layout is not None:
+            # 0: 顶部自定义窗口按钮行
+            # 1: 标题
+            # 2: 组名/成员信息
+            # 3-6: 各功能分组（尽量占据更多高度）
+            # 7: 进度条
+            # 8: 底部弹性空白
+            left_layout.setStretch(0, 0)
+            left_layout.setStretch(1, 0)
+            left_layout.setStretch(2, 0)
+            left_layout.setStretch(3, 1)
+            left_layout.setStretch(4, 1)
+            left_layout.setStretch(5, 1)
+            left_layout.setStretch(6, 1)
+            left_layout.setStretch(7, 0)
+            left_layout.setStretch(8, 0)
+
+        # 使用无边框窗口，自定义标题栏与控制按钮
+        self.setWindowFlag(Qt.FramelessWindowHint, True)
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
+
+        # 用代码把 ui 里的占位 QLabel 替换成真正的 ImageLabel
+        def _replace_with_imagelabel(obj_name: str) -> ImageLabel:
+            placeholder = self.findChild(QLabel, obj_name)
+            if placeholder is None:
+                return None
+            parent = placeholder.parent()
+            layout = parent.layout()
+            index = layout.indexOf(placeholder)
+            layout.removeWidget(placeholder)
+            placeholder.deleteLater()
+            new_label = ImageLabel(parent=parent)
+            new_label.setObjectName(obj_name)
+            layout.insertWidget(index, new_label)
+            return new_label
+
+        self.original_label = _replace_with_imagelabel("lblOriginal")
+        self.result_label = _replace_with_imagelabel("lblResult")
+
+        # 绑定其它控件到原先使用的属性名
+        self.info_text = self.findChild(QTextEdit, "textInfo")
+        self.dehaze_combo = self.findChild(QComboBox, "comboDehaze")
+        self.derain_combo = self.findChild(QComboBox, "comboDerain")
+        self.progress_bar = self.findChild(QProgressBar, "progressBar")
+
+        # 自定义窗口控制按钮
+        self.btn_close = self.findChild(QPushButton, "btnClose")
+        self.btn_minimize = self.findChild(QPushButton, "btnMinimize")
+        self.btn_maximize = self.findChild(QPushButton, "btnMaximize")
+
+        if self.btn_close is not None:
+            self.btn_close.clicked.connect(self.close)
+        if self.btn_minimize is not None:
+            self.btn_minimize.clicked.connect(self.showMinimized)
+        if self.btn_maximize is not None:
+            self.btn_maximize.clicked.connect(self.toggle_max_restore)
+
+        # 信号连接到已有槽函数
+        self.findChild(QPushButton, "btn_openImage").clicked.connect(self.open_image)
+        self.findChild(QPushButton, "btn_openGT").clicked.connect(self.open_gt_image)
+        self.findChild(QPushButton, "btn_saveResult").clicked.connect(self.save_image)
+        self.findChild(QPushButton, "btn_batchProcess").clicked.connect(self.batch_process)
+        self.findChild(QPushButton, "btnApplyDehaze").clicked.connect(self.apply_dehaze)
+        self.findChild(QPushButton, "btnApplyDerain").clicked.connect(self.apply_derain)
+        self.findChild(QPushButton, "btnCalculateMetrics").clicked.connect(self.calculate_metrics)
+        self.findChild(QPushButton, "btnCompareAlgorithms").clicked.connect(self.compare_algorithms)
+
+        if self.progress_bar is not None:
+            self.progress_bar.setVisible(False)
+
+        # 放大整体字体
+        font = QFont("微软雅黑", 11)
+        self.setFont(font)
+
+    def toggle_max_restore(self):
+        """在最大化与还原之间切换"""
+        if self.isMaximized():
+            self.showNormal()
+        else:
+            self.showMaximized()
+
+    def mousePressEvent(self, event):
+        """支持拖动无边框窗口"""
+        if event.button() == Qt.LeftButton:
+            self._is_dragging = True
+            self._drag_pos = event.globalPos() - self.frameGeometry().topLeft()
+            event.accept()
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self._is_dragging and event.buttons() & Qt.LeftButton:
+            self.move(event.globalPos() - self._drag_pos)
+            event.accept()
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self._is_dragging = False
+        super().mouseReleaseEvent(event)
+
     def init_algorithms(self):
         """初始化算法列表"""
         # 去雾算法
@@ -335,6 +267,7 @@ class MainWindow(QMainWindow):
             "伽马校正": DehazeAlgorithms.gamma_correction,
         }
         
+        self.dehaze_combo.clear()
         for name in self.dehaze_algorithms.keys():
             self.dehaze_combo.addItem(name)
         
@@ -348,6 +281,7 @@ class MainWindow(QMainWindow):
             "稀疏编码去雨": DerainAlgorithms.dsc_derain,
         }
         
+        self.derain_combo.clear()
         for name in self.derain_algorithms.keys():
             self.derain_combo.addItem(name)
     
@@ -633,8 +567,8 @@ def main():
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
     
-    # 设置中文字体
-    font = QFont("微软雅黑", 9)
+    # 设置中文字体（整体字号稍大一些）
+    font = QFont("微软雅黑", 11)
     app.setFont(font)
     
     window = MainWindow()
