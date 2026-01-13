@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QMessageBox, QProgressBar, QTableWidget, QTableWidgetItem,
                              QHeaderView, QSplitter, QTabWidget, QSpinBox, QDoubleSpinBox,
                              QFormLayout, QSlider)
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QPoint
 from PyQt5.QtGui import QImage, QPixmap, QFont
 
 from algorithms import DehazeAlgorithms, DerainAlgorithms
@@ -29,11 +29,17 @@ class ImageLabel(QLabel):
         self.title = title
         self.setAlignment(Qt.AlignCenter)
         self.setMinimumSize(300, 300)
+        # 与整体界面统一的梦幻磨砂风格
         self.setStyleSheet("""
             QLabel {
-                border: 2px solid #ccc;
-                background-color: #f5f5f5;
-                border-radius: 5px;
+                border-radius: 18px;
+                border: 2px solid rgba(255, 255, 255, 0.65);
+                background-color: qlineargradient(
+                    x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(255, 228, 246, 0.9),
+                    stop:1 rgba(210, 235, 255, 0.9)
+                );
+                color: #333333;
             }
         """)
         self.setText(title if title else "无图像")
@@ -128,6 +134,10 @@ class MainWindow(QMainWindow):
         self.processed_image = None
         self.gt_image = None  # Ground truth image
         self.batch_results = []
+
+        # 窗口拖动相关状态
+        self._is_dragging = False
+        self._drag_pos = QPoint()
         
         # 使用 .ui 初始化界面
         self.init_ui()
@@ -138,6 +148,35 @@ class MainWindow(QMainWindow):
         """使用 QtDesigner 生成的 .ui 文件初始化界面"""
         ui_path = os.path.join(os.path.dirname(__file__), "main.ui")
         uic.loadUi(ui_path, self)
+
+        # 设置左右区域伸缩比例为 1:3（左：右）
+        main_layout = self.findChild(QHBoxLayout, "horizontalLayout")
+        if main_layout is not None:
+            main_layout.setStretch(0, 1)
+            main_layout.setStretch(1, 3)
+
+        # 左侧垂直布局：让按钮区域纵向更均匀铺满整列
+        left_layout = self.findChild(QVBoxLayout, "verticalLayout_left")
+        if left_layout is not None:
+            # 0: 顶部自定义窗口按钮行
+            # 1: 标题
+            # 2: 组名/成员信息
+            # 3-6: 各功能分组（尽量占据更多高度）
+            # 7: 进度条
+            # 8: 底部弹性空白
+            left_layout.setStretch(0, 0)
+            left_layout.setStretch(1, 0)
+            left_layout.setStretch(2, 0)
+            left_layout.setStretch(3, 1)
+            left_layout.setStretch(4, 1)
+            left_layout.setStretch(5, 1)
+            left_layout.setStretch(6, 1)
+            left_layout.setStretch(7, 0)
+            left_layout.setStretch(8, 0)
+
+        # 使用无边框窗口，自定义标题栏与控制按钮
+        self.setWindowFlag(Qt.FramelessWindowHint, True)
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
 
         # 用代码把 ui 里的占位 QLabel 替换成真正的 ImageLabel
         def _replace_with_imagelabel(obj_name: str) -> ImageLabel:
@@ -163,6 +202,18 @@ class MainWindow(QMainWindow):
         self.derain_combo = self.findChild(QComboBox, "comboDerain")
         self.progress_bar = self.findChild(QProgressBar, "progressBar")
 
+        # 自定义窗口控制按钮
+        self.btn_close = self.findChild(QPushButton, "btnClose")
+        self.btn_minimize = self.findChild(QPushButton, "btnMinimize")
+        self.btn_maximize = self.findChild(QPushButton, "btnMaximize")
+
+        if self.btn_close is not None:
+            self.btn_close.clicked.connect(self.close)
+        if self.btn_minimize is not None:
+            self.btn_minimize.clicked.connect(self.showMinimized)
+        if self.btn_maximize is not None:
+            self.btn_maximize.clicked.connect(self.toggle_max_restore)
+
         # 信号连接到已有槽函数
         self.findChild(QPushButton, "btn_openImage").clicked.connect(self.open_image)
         self.findChild(QPushButton, "btn_openGT").clicked.connect(self.open_gt_image)
@@ -176,8 +227,35 @@ class MainWindow(QMainWindow):
         if self.progress_bar is not None:
             self.progress_bar.setVisible(False)
 
-        font = QFont("微软雅黑", 9)
+        # 放大整体字体
+        font = QFont("微软雅黑", 11)
         self.setFont(font)
+
+    def toggle_max_restore(self):
+        """在最大化与还原之间切换"""
+        if self.isMaximized():
+            self.showNormal()
+        else:
+            self.showMaximized()
+
+    def mousePressEvent(self, event):
+        """支持拖动无边框窗口"""
+        if event.button() == Qt.LeftButton:
+            self._is_dragging = True
+            self._drag_pos = event.globalPos() - self.frameGeometry().topLeft()
+            event.accept()
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self._is_dragging and event.buttons() & Qt.LeftButton:
+            self.move(event.globalPos() - self._drag_pos)
+            event.accept()
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self._is_dragging = False
+        super().mouseReleaseEvent(event)
 
     def init_algorithms(self):
         """初始化算法列表"""
@@ -489,8 +567,8 @@ def main():
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
     
-    # 设置中文字体
-    font = QFont("微软雅黑", 9)
+    # 设置中文字体（整体字号稍大一些）
+    font = QFont("微软雅黑", 11)
     app.setFont(font)
     
     window = MainWindow()
