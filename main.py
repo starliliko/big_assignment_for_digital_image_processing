@@ -22,6 +22,31 @@ from algorithms import DehazeAlgorithms, DerainAlgorithms
 from metrics import ImageMetrics
 # from Ui_main import Ui_MainWindow  # 不再使用自动生成的 Python UI 文件，直接加载 main.ui
 
+
+def imread_unicode(file_path, flags=cv2.IMREAD_COLOR):
+    """在包含中文/空格路径时读取图像，返回None表示失败。"""
+    try:
+        data = np.fromfile(file_path, dtype=np.uint8)
+        if data.size == 0:
+            return None
+        return cv2.imdecode(data, flags)
+    except Exception:
+        return None
+
+
+def imwrite_unicode(file_path, image):
+    """在包含中文/空格路径时保存图像，返回True/False。"""
+    ext = os.path.splitext(file_path)[1]
+    ext = ext if ext else ".png"
+    ok, buf = cv2.imencode(ext, image)
+    if not ok:
+        return False
+    try:
+        buf.tofile(file_path)
+        return True
+    except Exception:
+        return False
+
 class ImageLabel(QLabel):
     """可缩放的图像显示标签"""
     def __init__(self, parent=None, title=""):
@@ -97,7 +122,7 @@ class BatchProcessThread(QThread):
         for i, img_path in enumerate(self.image_paths):
             try:
                 # 读取图像
-                image = cv2.imread(img_path)
+                image = imread_unicode(img_path)
                 if image is None:
                     continue
                 
@@ -107,7 +132,7 @@ class BatchProcessThread(QThread):
                 # 如果有ground truth，计算有参考指标
                 gt_image = None
                 if i < len(self.gt_paths) and self.gt_paths[i]:
-                    gt_image = cv2.imread(self.gt_paths[i])
+                    gt_image = imread_unicode(self.gt_paths[i])
                     if gt_image is not None and gt_image.shape != processed.shape:
                         gt_image = cv2.resize(gt_image, (processed.shape[1], processed.shape[0]))
                 
@@ -293,7 +318,7 @@ class MainWindow(QMainWindow):
         )
         
         if file_path:
-            self.current_image = cv2.imread(file_path)
+            self.current_image = imread_unicode(file_path)
             if self.current_image is not None:
                 self.original_label.set_image(self.current_image)
                 self.processed_image = None
@@ -311,7 +336,7 @@ class MainWindow(QMainWindow):
         )
         
         if file_path:
-            self.gt_image = cv2.imread(file_path)
+            self.gt_image = imread_unicode(file_path)
             if self.gt_image is not None:
                 self.info_text.append(f"\n已加载参考图(GT): {os.path.basename(file_path)}")
             else:
@@ -329,8 +354,10 @@ class MainWindow(QMainWindow):
         )
         
         if file_path:
-            cv2.imwrite(file_path, self.processed_image)
-            self.info_text.append(f"\n结果已保存: {file_path}")
+            if imwrite_unicode(file_path, self.processed_image):
+                self.info_text.append(f"\n结果已保存: {file_path}")
+            else:
+                QMessageBox.critical(self, "错误", "保存失败，请检查路径或权限！")
     
     def apply_dehaze(self):
         """应用去雾算法"""
