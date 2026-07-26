@@ -1,289 +1,152 @@
-# 图像去雾去雨系统
+# 图像去雾与去雨系统
 
-数字图像处理大作业 - 题目5：图像去雾去雨
+[![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.5%2B-5C3EE8?logo=opencv&logoColor=white)](https://opencv.org/)
+[![PyQt5](https://img.shields.io/badge/GUI-PyQt5-41CD52?logo=qt&logoColor=white)](https://www.riverbankcomputing.com/software/pyqt/)
+[![Tests](https://github.com/starliliko/big_assignment_for_digital_image_processing/actions/workflows/tests.yml/badge.svg)](https://github.com/starliliko/big_assignment_for_digital_image_processing/actions/workflows/tests.yml)
 
-## 📋 项目简介
+数字图像处理课程大作业：一个基于传统图像处理方法的桌面端去雾、去雨与质量评价工具。项目将多种算法、参考/无参考评价指标、批量处理和可视化界面整合在一个 PyQt5 应用中，便于观察不同方法的效果与适用场景。
 
-在有雨有雾的环境下，摄像头系统会由于场景的能见度低，导致所拍摄的成像出现对比度低、模糊不清、图像整体颜色偏灰白色、色彩偏移等问题。本项目实现了多种图像去雾去雨算法，并提供了完整的评价指标体系和用户友好的图形界面。
+> 本项目用于课程学习和算法对比。传统增强方法可以改善部分图像的视觉效果，但不能替代面向真实复杂天气训练的深度学习恢复模型。
 
-## ✨ 功能特性
+## 项目亮点
 
-### 去雾算法（4种）
-- ✅ **直方图均衡化 (HE)** - 基于图像增强，快速简单
-- ✅ **对比度受限的自适应直方图均衡化 (CLAHE)** - 基于图像增强，效果稳定推荐
-- ✅ **自适应暗通道** - 基于物理模型（何恺明算法改进），智能调参
-- ✅ **伽马校正** - 基于图像增强，调整亮度
+- 4 种界面可选去雾方法，包含增强类与物理模型类算法
+- 6 种界面可选去雨方法，覆盖空间滤波、形态学和低秩分解
+- 支持单张处理、算法横向对比和文件夹批处理
+- 支持中文及包含空格的图像路径
+- 同时提供 5 项有参考指标与 5 项无参考指标
+- UI 与算法、指标模块分离，便于独立实验和扩展
 
-### 去雨算法（6种）
-- ✅ **中值滤波** - 基于图像增强
-- ✅ **双边滤波** - 基于图像增强
-- ✅ **导向滤波** - 基于图像增强
-- ✅ **形态学去雨** - 基于图像增强
-- ✅ **低秩分解** - 基于图像增强
-- ✅ **稀疏编码去雨** - 基于图像增强
+## 功能概览
 
-### 评价指标（10种）
-#### 有参考指标（需要GT图像）
-- **PSNR** - 峰值信噪比
-- **SSIM** - 结构相似性指数
-- **MSE** - 均方误差
-- **MAE** - 平均绝对误差
-- **RMSE** - 均方根误差
+| 类别 | 方法 |
+| --- | --- |
+| 去雾 | 直方图均衡化、CLAHE、自适应暗通道先验、伽马校正 |
+| 去雨 | 中值滤波、双边滤波、导向滤波、形态学处理、低秩分解、稀疏编码近似 |
+| 有参考指标 | PSNR、SSIM、MSE、MAE、RMSE |
+| 无参考指标 | 熵、对比度、平均梯度、锐度、色彩丰富度 |
+| 工作方式 | 单张处理、算法对比、批量处理、结果保存 |
 
-#### 无参考指标
-- **熵** - 图像信息量
-- **对比度** - 明暗对比程度
-- **平均梯度** - 图像清晰度
-- **锐度** - 边缘锐利程度
-- **色彩丰富度** - 颜色丰富程度
+`algorithms.py` 中还保留了 Retinex、同态滤波和基础暗通道先验等实现，可用于继续扩展界面选项或开展独立实验。
 
-### 核心功能
-- 🖼️ **单张图像处理** - 打开图像，选择算法处理
-- 📊 **评价指标计算** - 自动计算所有评价指标
-- 🔄 **算法对比** - 一键对比所有算法效果
-- 📦 **批量处理** - 批量处理多张图像并统计平均指标
-- 💾 **结果保存** - 保存处理后的图像
-- 🎨 **图形界面** - 基于PyQt5的友好GUI
+## 快速开始
 
-## 🔧 环境要求
+### 1. 获取项目
 
-### Python版本
-- Python 3.7+ (推荐 3.10)
-
-### 依赖库
-```
-opencv-python>=4.5.0
-numpy>=1.19.0
-scipy>=1.5.0
-PyQt5>=5.15.0
-```
-
-## 📥 安装步骤
-
-### 1. 克隆或下载项目
 ```bash
-cd D:\数字图像处理大作业
+git clone https://github.com/starliliko/big_assignment_for_digital_image_processing.git
+cd big_assignment_for_digital_image_processing
 ```
 
-### 2. 创建虚拟环境（推荐）
-```bash
-# 使用conda
-conda create -n pyqt_env python=3.10
-conda activate pyqt_env
+### 2. 创建虚拟环境
 
-# 或使用venv
-python -m venv venv
-venv\Scripts\activate  # Windows
+```bash
+python -m venv .venv
 ```
 
-### 3. 安装依赖
-```bash
-# 使用pip安装
-pip install opencv-python numpy scipy PyQt5
+Windows PowerShell：
 
-# 或使用清华镜像加速
-pip install opencv-python numpy scipy PyQt5 -i https://pypi.tuna.tsinghua.edu.cn/simple
+```powershell
+.\.venv\Scripts\Activate.ps1
 ```
 
-### 4. 验证安装
+macOS / Linux：
+
 ```bash
-python -c "import cv2, numpy, scipy, PyQt5; print('所有依赖安装成功！')"
+source .venv/bin/activate
 ```
 
-## 🚀 使用说明
+### 3. 安装并运行
 
-### 启动主程序
 ```bash
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 python main.py
 ```
 
-### 基本操作流程
+建议使用 Python 3.9–3.12。首次启动需要安装带桌面 GUI 支持的 PyQt5；在无图形界面的服务器环境中只能运行算法与测试。
 
-#### 1. 单张图像处理
-1. 点击 **「打开图像」** 加载有雾/有雨图像
-2. （可选）点击 **「打开参考图(GT)」** 加载清晰参考图
-3. 在 **「去雾算法」** 或 **「去雨算法」** 中选择算法
-4. 点击 **「执行去雾」** 或 **「执行去雨」** 处理图像
-5. 点击 **「计算指标」** 查看评价结果
-6. 点击 **「保存结果」** 保存处理后的图像
+## 使用流程
 
-#### 2. 算法对比
-1. 打开图像
-2. 点击 **「算法对比」** 按钮
-3. 系统会自动运行所有算法并显示对比结果
+1. 点击“打开图像”，载入有雾或有雨图像。
+2. 如有清晰参考图，点击“打开参考图（GT）”。
+3. 选择去雾或去雨算法并执行。
+4. 点击“计算指标”查看量化结果，或使用“算法对比”横向比较。
+5. 保存结果；处理数据集时可使用“批量处理”。
 
-#### 3. 批量处理
-1. 点击 **「批量处理」** 按钮
-2. 选择包含有雾/有雨图像的文件夹
-3. （可选）选择包含GT图像的文件夹
-4. 等待处理完成，查看统计结果
+程序通过 `numpy.fromfile` 与 `cv2.imdecode` 读取文件，并通过 `cv2.imencode` 保存结果，因此可以处理中文路径和带空格路径。
 
-### 生成测试图像
-```bash
-python generate_test_images.py
+## 项目结构
+
+```text
+.
+├── main.py          # PyQt5 主程序、文件操作与批处理线程
+├── main.ui          # Qt Designer 界面定义
+├── Ui_main.py       # Qt Designer 生成的 Python 界面代码
+├── algorithms.py    # 去雾与去雨算法
+├── metrics.py       # 有参考与无参考评价指标
+├── tests/           # 核心算法与指标测试
+└── requirements.txt
 ```
 
-按提示操作：
-- **模式1**：处理单张清晰图像
-- **模式2**：批量处理文件夹中的图像
+运行时数据流：
 
-生成的测试数据将包含：
-- `test_images/foggy/` - 不同强度的有雾图像
-- `test_images/rainy/` - 不同强度的有雨图像
-- `test_images/hazy/` - 霾图像
-- `test_images/rain_fog/` - 雨雾混合图像
-- `test_images/gt/` - 清晰参考图（Ground Truth）
-
-## 📁 项目结构
-
-```
-数字图像处理大作业/
-├── main.py                      # 主程序（GUI界面）
-├── algorithms.py                # 去雾去雨算法模块
-├── metrics.py                   # 评价指标模块
-├── generate_test_images.py     # 测试图像生成工具
-├── README.md                    # 项目说明文档
-├── requirements.txt             # 依赖列表（可选）
-└── test_images/                 # 测试图像目录（生成）
-    ├── foggy/                   # 有雾图像
-    ├── rainy/                   # 有雨图像
-    ├── hazy/                    # 霾图像
-    ├── rain_fog/                # 雨雾混合
-    └── gt/                      # 清晰参考图
+```text
+输入图像 ──→ 去雾/去雨算法 ──→ 处理结果 ──→ 保存
+    │                              │
+    └──── 可选 Ground Truth ────────┴──→ 质量指标
 ```
 
-## 🎯 作业要求对应
-
-### 必做内容 ✅
-- ✅ **基于图像增强的方法**：实现了4种去雾算法和6种去雨算法，均为图像增强方法
-- ✅ **对比算法**：共10种算法可供对比（远超3种要求）
-- ✅ **客观评价指标**：实现了PSNR、SSIM、MAE、MSE等必需指标
-- ✅ **测试统计**：支持批量处理10张以上图像并统计指标
-
-### 加分内容 ✅
-- ✅ **完整数据集统计**：支持使用完整数据集进行批量统计
-- ✅ **更多评价指标**：额外实现了RMSE、熵、对比度、平均梯度、锐度、色彩丰富度等指标
-- ✅ **用户友好界面**：提供了完整的PyQt5图形界面
-- ✅ **测试数据生成**：提供了测试图像生成工具
-
-## 🔬 算法原理简介
+## 算法说明
 
 ### 自适应暗通道先验
-基于何恺明的暗通道先验理论改进：
-- 自动检测图像雾浓度
-- 根据雾浓度智能调整omega参数（0.75~0.90）
-- 添加色彩增强后处理
 
-**大气散射模型**：
+暗通道先验从大气散射模型出发：
+
+```text
+I(x) = J(x)t(x) + A(1 - t(x))
 ```
-I(x) = J(x) * t(x) + A * (1 - t(x))
-```
-- I(x): 有雾图像
-- J(x): 无雾图像（待恢复）
-- t(x): 透射率
-- A: 大气光
 
-### CLAHE（对比度受限的自适应直方图均衡化）
-在局部区域进行对比度限制的直方图均衡化，避免过度增强噪声。效果稳定，速度快，推荐优先使用。
+其中 `I` 为观测图像，`J` 为待恢复图像，`t` 为透射率，`A` 为大气光。项目根据图像雾浓度调整参数，并在恢复后进行颜色增强。
 
-### 直方图均衡化 (HE)
-通过调整图像直方图分布，增强整体对比度。算法简单，处理速度最快。
+### CLAHE
 
-### 伽马校正
-通过非线性变换调整图像亮度，适用于整体偏暗的图像。
+在局部区域执行带对比度限制的直方图均衡化。它速度快、结果稳定，并能减少普通直方图均衡化放大噪声的问题。
 
-## 📊 评价指标说明
+### 去雨方法
 
-### PSNR（峰值信噪比）
-- 范围：0 ~ ∞ (dB)
-- 值越大越好，通常 >30dB 认为质量较好
-- 计算公式：`PSNR = 10 * log10(MAX² / MSE)`
+本项目主要使用传统图像分解与平滑思路抑制雨纹，包括保边滤波、方向结构处理、形态学操作以及低秩近似。不同方法会在雨纹抑制、边缘保留和计算速度之间产生不同权衡。
 
-### SSIM（结构相似性）
-- 范围：-1 ~ 1
-- 越接近1表示越相似
-- 同时考虑亮度、对比度、结构
+## 评价指标
 
-### 熵（Entropy）
-- 衡量图像信息量
-- 值越大表示信息越丰富
+- PSNR、SSIM、MSE、MAE、RMSE 需要尺寸对应的清晰参考图。
+- 熵、对比度、平均梯度、锐度和色彩丰富度无需参考图。
+- 单一指标不能完整代表视觉质量，建议结合原图、处理结果和多项指标判断。
 
-### 平均梯度
-- 衡量图像清晰度
-- 值越大表示图像越清晰
+## 测试
 
-## 📚 参考数据集
-
-### 去雾数据集
-- **RESIDE**: https://sites.google.com/view/reside-dehaze-datasets
-  - 包含室内/室外有雾图像和GT
-
-### 去雨数据集
-- **Video and Single Image Deraining**: https://github.com/hongwang01/Video-and-Single-Image-Deraining
-  - 参考 "Datasets and Descriptions" 部分
-
-## ⚠️ 注意事项
-
-1. **图像尺寸**：建议使用分辨率不超过1920×1080的图像，过大图像可能导致处理较慢
-2. **GT图像**：如果有参考图像，确保尺寸与待处理图像一致（程序会自动调整）
-3. **处理时间**：暗通道先验算法较慢，大图像可能需要数秒
-4. **批量处理**：批量处理大量图像时，建议选择较快的算法（如CLAHE）
-
-## 🐛 常见问题
-
-### Q1: 运行时提示"No module named 'cv2'"
-**A**: 需要安装 opencv-python
 ```bash
-pip install opencv-python
+python -m unittest discover -s tests -v
 ```
 
-### Q2: 图形界面无法启动
-**A**: 检查是否安装了 PyQt5
-```bash
-pip install PyQt5
-```
+测试使用程序生成的小型合成图像，不依赖外部数据集。GitHub Actions 会在每次推送和 Pull Request 时运行相同测试。
 
-### Q3: 处理速度慢
-**A**: 暗通道先验算法计算量大，可以：
-- 缩小图像尺寸
-- 使用更快的算法（CLAHE、直方图均衡化等）
+## 可扩展方向
 
-### Q4: 没有测试图像
-**A**: 使用提供的测试图像生成工具：
-```bash
-python generate_test_images.py
-```
+- 为 Retinex、同态滤波等已有实现增加界面入口
+- 引入 RESIDE、Rain100 等公开数据集，建立统一基准
+- 记录每种算法的运行耗时与批量统计结果
+- 增加参数调节面板和处理前后滑动对比
+- 接入轻量级深度学习模型，与传统方法进行对照
 
-## 📝 作业提交清单
+## 参考资料
 
-- [x] 源代码文件
-  - [x] main.py
-  - [x] algorithms.py
-  - [x] metrics.py
-  - [x] generate_test_images.py
-- [x] README.md 说明文档
-- [x] 实现基于图像增强的方法
-- [x] 实现3种以上算法对比
-- [x] 实现评价指标（PSNR、SSIM、MAE、MSE）
-- [x] 支持10张以上图像的批量统计
+- He, K., Sun, J., & Tang, X. *Single Image Haze Removal Using Dark Channel Prior*.
+- [RESIDE 去雾数据集](https://sites.google.com/view/reside-dehaze-datasets)
+- [OpenCV Documentation](https://docs.opencv.org/)
+- [Qt for Python / Qt Documentation](https://doc.qt.io/)
 
-## 👥 项目信息
+## 许可
 
-- **课程**：数字图像处理
-- **题目**：题目5 - 图像去雾去雨
-- **组名**：[请填写]
-- **成员**：[请填写]
-
-## 📄 许可证
-
-本项目仅用于学习和研究目的。
-
-## 🙏 致谢
-
-- 何恺明等人的暗通道先验算法
-- PyQt5 开发团队
-- OpenCV 开源社区
-
----
-
-**最后更新日期**: 2025年12月30日
+项目当前未声明开源许可证，仅用于学习与课程展示。若计划允许他人复制、修改或再发布，请在确认团队成员意见后补充合适的许可证。
