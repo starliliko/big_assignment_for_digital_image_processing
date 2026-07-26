@@ -3,7 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![OpenCV](https://img.shields.io/badge/OpenCV-4.5%2B-5C3EE8?logo=opencv&logoColor=white)](https://opencv.org/)
 [![PyQt5](https://img.shields.io/badge/GUI-PyQt5-41CD52?logo=qt&logoColor=white)](https://www.riverbankcomputing.com/software/pyqt/)
-[![Tests](https://github.com/starliliko/big_assignment_for_digital_image_processing/actions/workflows/tests.yml/badge.svg)](https://github.com/starliliko/big_assignment_for_digital_image_processing/actions/workflows/tests.yml)
+[![Tests](https://github.com/starliliko/image-dehaze-derain-toolkit/actions/workflows/tests.yml/badge.svg)](https://github.com/starliliko/image-dehaze-derain-toolkit/actions/workflows/tests.yml)
 
 数字图像处理课程大作业：一个基于传统图像处理方法的桌面端去雾、去雨与质量评价工具。项目将多种算法、参考/无参考评价指标、批量处理和可视化界面整合在一个 PyQt5 应用中，便于观察不同方法的效果与适用场景。
 
@@ -35,8 +35,8 @@
 ### 1. 获取项目
 
 ```bash
-git clone https://github.com/starliliko/big_assignment_for_digital_image_processing.git
-cd big_assignment_for_digital_image_processing
+git clone https://github.com/starliliko/image-dehaze-derain-toolkit.git
+cd image-dehaze-derain-toolkit
 ```
 
 ### 2. 创建虚拟环境
